@@ -1,0 +1,4 @@
+* SPI
+* I2C
+* Serial
+* VideoStream (rely on V4l/GStreamer?)
