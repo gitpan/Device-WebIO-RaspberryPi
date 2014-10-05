@@ -1,6 +1,11 @@
 Revision history for perl module Device::WebIO::RaspberryPi
 
-0.002 2014-??-??
+0.003 2014-10-05
+
+- Implemented StillImageOutput role
+- Added missing dependency for HiPi
+
+0.002 2014-09-20
 
 - all_desc() and pin_desc() implemented
 
