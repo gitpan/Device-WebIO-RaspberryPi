@@ -4,7 +4,7 @@
       "Timm Murray <tmurray@wumpus-cave.net>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 5.020, CPAN::Meta::Converter version 2.142690",
+   "generated_by" : "Dist::Zilla version 5.019, CPAN::Meta::Converter version 2.140640",
    "license" : [
       "bsd"
    ],
@@ -16,12 +16,12 @@
    "prereqs" : {
       "configure" : {
          "requires" : {
-            "ExtUtils::MakeMaker" : "0"
+            "ExtUtils::MakeMaker" : "6.30"
          }
       },
       "runtime" : {
          "requires" : {
-            "Device::WebIO" : "0.003",
+            "Device::WebIO" : "0.004",
             "HiPi" : "0",
             "Moo" : "0",
             "namespace::clean" : "0"
@@ -42,6 +42,6 @@
          "web" : "https://github.com/frezik/Device-WebIO-RaspberryPi"
       }
    },
-   "version" : "0.003"
+   "version" : "0.004"
 }
 

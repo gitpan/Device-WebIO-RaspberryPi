@@ -1,5 +1,9 @@
 Revision history for perl module Device::WebIO::RaspberryPi
 
+0.004 2014-10-09
+
+- Implemented I2CProvider role
+
 0.003 2014-10-05
 
 - Implemented StillImageOutput role

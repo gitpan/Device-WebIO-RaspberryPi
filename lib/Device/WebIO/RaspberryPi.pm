@@ -22,12 +22,13 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 # POSSIBILITY OF SUCH DAMAGE.
 package Device::WebIO::RaspberryPi;
-$Device::WebIO::RaspberryPi::VERSION = '0.003';
+$Device::WebIO::RaspberryPi::VERSION = '0.004';
 # ABSTRACT: Device::WebIO implementation for the Rapsberry Pi
 use v5.12;
 use Moo;
 use namespace::clean;
 use HiPi::Wiring qw( :wiring );
+use HiPi::Device::I2C;
 
 use constant {
     TYPE_REV1         => 0,
@@ -324,6 +325,46 @@ sub img_stream
 }
 
 
+with 'Device::WebIO::Device::I2CProvider';
+
+sub i2c_channels { 2 }
+
+sub i2c_read
+{
+    my ($self, $channel, $addr, $register, $len) = @_;
+    my $dev = $self->_get_i2c_device_by_channel( $channel );
+    my $hipi = HiPi::Device::I2C->new(
+        devicename => $dev,
+        address    => $addr,
+    );
+
+    my @data = $hipi->bus_read( $register, $len );
+    return @data;
+}
+
+sub i2c_write
+{
+    my ($self, $channel, $addr, $register, @data) = @_;
+    my $dev = $self->_get_i2c_device_by_channel( $channel );
+    my $hipi = HiPi::Device::I2C->new(
+        devicename => $dev,
+        address    => $addr,
+    );
+
+    $hipi->bus_write( $register, @data );
+    return 1;
+}
+
+sub _get_i2c_device_by_channel
+{
+    my ($self, $channel) = @_;
+    return
+        $channel == 0 ? '/dev/i2c-0' :
+        $channel == 1 ? '/dev/i2c-1' :
+        undef;
+}
+
+
 sub _pin_desc_rev1
 {
     return [qw{
@@ -436,6 +477,8 @@ WebIO object.
 =item * PWM
 
 =item * StillImageOutput
+
+=item * I2CProvider
 
 =back
 
