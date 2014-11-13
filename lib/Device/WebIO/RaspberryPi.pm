@@ -22,7 +22,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 # POSSIBILITY OF SUCH DAMAGE.
 package Device::WebIO::RaspberryPi;
-$Device::WebIO::RaspberryPi::VERSION = '0.004';
+$Device::WebIO::RaspberryPi::VERSION = '0.005';
 # ABSTRACT: Device::WebIO implementation for the Rapsberry Pi
 use v5.12;
 use Moo;
@@ -264,6 +264,12 @@ has '_img_height' => (
         768
     ]},
 );
+has '_img_quality' => (
+    is      => 'rw',
+    default => sub {[
+        100
+    ]},
+);
 with 'Device::WebIO::Device::StillImageOutput';
 
 my %IMG_CONTENT_TYPES = (
@@ -284,6 +290,12 @@ sub img_height
     return $self->_img_height->[$channel];
 }
 
+sub img_quality
+{
+    my ($self, $channel) = @_;
+    return $self->_img_quality->[$channel];
+}
+
 sub img_set_width
 {
     my ($self, $channel, $width) = @_;
@@ -295,6 +307,13 @@ sub img_set_height
 {
     my ($self, $channel, $height) = @_;
     $self->_img_height->[$channel] = $height;
+    return 1;
+}
+
+sub img_set_quality
+{
+    my ($self, $channel, $quality) = @_;
+    $self->_img_quality->[$channel] = $quality;
     return 1;
 }
 
@@ -315,11 +334,12 @@ sub img_stream
     my ($self, $channel, $mime_type) = @_;
     my $imager_type = $IMG_CONTENT_TYPES{$mime_type};
 
-    my $width  = $self->img_width( $channel );
-    my $height = $self->img_height( $channel );
+    my $width   = $self->img_width( $channel );
+    my $height  = $self->img_height( $channel );
+    my $quality = $self->img_quality( $channel );
 
     # TODO Capture using a more direct way than executing raspistill
-    open( my $in, '-|', "raspistill -o - -w $width -h $height" ) 
+    open( my $in, '-|', "raspistill -o - -w $width -h $height -q $quality" ) 
         or die "Couldn't execute raspistill: $!\n";
     return $in;
 }

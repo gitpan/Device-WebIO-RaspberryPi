@@ -20,7 +20,7 @@ my %WriteMakefileArgs = (
   "LICENSE" => "bsd",
   "NAME" => "Device::WebIO::RaspberryPi",
   "PREREQ_PM" => {
-    "Device::WebIO" => "0.004",
+    "Device::WebIO" => "0.006",
     "HiPi" => 0,
     "Moo" => 0,
     "namespace::clean" => 0
@@ -28,7 +28,7 @@ my %WriteMakefileArgs = (
   "TEST_REQUIRES" => {
     "Test::Pod" => 0
   },
-  "VERSION" => "0.004",
+  "VERSION" => "0.005",
   "test" => {
     "TESTS" => "t/*.t"
   }
@@ -36,7 +36,7 @@ my %WriteMakefileArgs = (
 
 
 my %FallbackPrereqs = (
-  "Device::WebIO" => "0.004",
+  "Device::WebIO" => "0.006",
   "HiPi" => 0,
   "Moo" => 0,
   "Test::Pod" => 0,
