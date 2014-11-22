@@ -22,6 +22,7 @@
       "runtime" : {
          "requires" : {
             "Device::WebIO" : "0.006",
+            "GStreamer1" : "0.002",
             "HiPi" : "0",
             "Moo" : "0",
             "namespace::clean" : "0"
@@ -42,6 +43,6 @@
          "web" : "https://github.com/frezik/Device-WebIO-RaspberryPi"
       }
    },
-   "version" : "0.005"
+   "version" : "0.006"
 }
 

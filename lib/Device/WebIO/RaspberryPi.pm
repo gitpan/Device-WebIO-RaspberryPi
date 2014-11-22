@@ -22,13 +22,15 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 # POSSIBILITY OF SUCH DAMAGE.
 package Device::WebIO::RaspberryPi;
-$Device::WebIO::RaspberryPi::VERSION = '0.005';
+$Device::WebIO::RaspberryPi::VERSION = '0.006';
 # ABSTRACT: Device::WebIO implementation for the Rapsberry Pi
 use v5.12;
 use Moo;
 use namespace::clean;
 use HiPi::Wiring qw( :wiring );
 use HiPi::Device::I2C;
+use GStreamer1;
+use Glib qw( TRUE FALSE );
 
 use constant {
     TYPE_REV1         => 0,
@@ -117,6 +119,11 @@ has '_pin_map' => (
 # pin number, *not* the Rpi's numbering
 has '_output_pin_value' => (
     is => 'ro',
+);
+
+has '_is_gstreamer_inited' => (
+    is      => 'rw',
+    default => sub { 0 },
 );
 
 
@@ -338,10 +345,54 @@ sub img_stream
     my $height  = $self->img_height( $channel );
     my $quality = $self->img_quality( $channel );
 
-    # TODO Capture using a more direct way than executing raspistill
-    open( my $in, '-|', "raspistill -o - -w $width -h $height -q $quality" ) 
-        or die "Couldn't execute raspistill: $!\n";
-    return $in;
+    $self->_init_gstreamer;
+
+    my $loop = Glib::MainLoop->new( undef, FALSE );
+    my $pipeline = GStreamer1::Pipeline->new( 'pipeline' );
+
+    my $rpi        = GStreamer1::ElementFactory::make( rpicamsrc => 'and_who' );
+    my $h264parse  = GStreamer1::ElementFactory::make( h264parse => 'are_you' );
+    my $capsfilter = GStreamer1::ElementFactory::make(
+        capsfilter => 'the_proud_lord_said' );
+    my $avdec_h264 = GStreamer1::ElementFactory::make(
+        avdec_h264 => 'that_i_should_bow_so_low' );
+    my $jpegenc    = GStreamer1::ElementFactory::make( jpegenc => 'only_a_cat' );
+    my $appsink    = GStreamer1::ElementFactory::make(
+        appsink => 'of_a_different_coat' );
+
+    my $caps = GStreamer1::Caps::Simple->new( 'video/x-h264',
+        width  => 'Glib::Int' => 800,
+        height => 'Glib::Int' => 600,
+    );
+    $capsfilter->set( caps => $caps );
+
+    $appsink->set( 'max-buffers'  => 20 );
+    $appsink->set( 'emit-signals' => TRUE );
+    $appsink->set( 'sync'         => FALSE );
+
+
+    my @link = (
+        $rpi, $h264parse, $capsfilter, $avdec_h264, $jpegenc, $appsink );
+    $pipeline->add( $_ ) for @link;
+    foreach my $i (0 .. ($#link - 1)) {
+        my $this = $link[$i];
+        my $next = $link[$i+1];
+        $this->link( $next );
+    }
+
+    $pipeline->set_state( "playing" );
+    my $jpeg_sample = $appsink->pull_sample;
+    $pipeline->set_state( "null" );
+
+    my $jpeg_buf = $jpeg_sample->get_buffer;
+    my $size = $jpeg_buf->get_size;
+    my $buf = $jpeg_buf->extract_dup( 0, $size, undef, $size );
+
+    my $scalar_buf = pack 'C*', @$buf;
+    open( my $jpeg_fh, '<', \$scalar_buf )
+        or die "Could not open ref to scalar: $!\n";
+
+    return $jpeg_fh;
 }
 
 
@@ -452,6 +503,16 @@ sub all_desc
 }
 
 
+sub _init_gstreamer
+{
+    my ($self) = @_;
+    return 1 if $self->_is_gstreamer_inited;
+    GStreamer1::init([ $0, @ARGV ]);
+    $self->_is_gstreamer_inited( 1 );
+    return 1;
+}
+
+
 # TODO
 #with 'Device::WebIO::Device::SPI';
 #with 'Device::WebIO::Device::I2C';
@@ -485,6 +546,14 @@ Access the Raspberry Pi's pins using Device::WebIO.
 After registering this with the main Device::WebIO object, you shouldn't need 
 to access anything in the Rpi object.  All access should go through the 
 WebIO object.
+
+=head1 CAMERA PREREQUISITES
+
+If you intended to use the camera-related methods (e.g. C<img_stream()>), 
+you will need to install the C<rpicamsrc> plugin for GStreamer.  You can 
+download and compile this from:
+
+https://github.com/thaytan/gst-rpicamsrc
 
 =head1 IMPLEMENTED ROLES
 

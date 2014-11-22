@@ -21,6 +21,7 @@ my %WriteMakefileArgs = (
   "NAME" => "Device::WebIO::RaspberryPi",
   "PREREQ_PM" => {
     "Device::WebIO" => "0.006",
+    "GStreamer1" => "0.002",
     "HiPi" => 0,
     "Moo" => 0,
     "namespace::clean" => 0
@@ -28,7 +29,7 @@ my %WriteMakefileArgs = (
   "TEST_REQUIRES" => {
     "Test::Pod" => 0
   },
-  "VERSION" => "0.005",
+  "VERSION" => "0.006",
   "test" => {
     "TESTS" => "t/*.t"
   }
@@ -37,6 +38,7 @@ my %WriteMakefileArgs = (
 
 my %FallbackPrereqs = (
   "Device::WebIO" => "0.006",
+  "GStreamer1" => "0.002",
   "HiPi" => 0,
   "Moo" => 0,
   "Test::Pod" => 0,
