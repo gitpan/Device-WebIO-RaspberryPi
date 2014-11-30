@@ -10,6 +10,7 @@ examples/blink.pl
 examples/picture.pl
 examples/switch_input.pl
 examples/tmp102.pl
+examples/video_stream.pl
 lib/Device/WebIO/RaspberryPi.pm
 t/001_load.t
 t/002_pod.t

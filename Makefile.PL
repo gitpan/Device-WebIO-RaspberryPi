@@ -20,7 +20,8 @@ my %WriteMakefileArgs = (
   "LICENSE" => "bsd",
   "NAME" => "Device::WebIO::RaspberryPi",
   "PREREQ_PM" => {
-    "Device::WebIO" => "0.006",
+    "AnyEvent" => "7.07",
+    "Device::WebIO" => "0.008",
     "GStreamer1" => "0.002",
     "HiPi" => 0,
     "Moo" => 0,
@@ -29,7 +30,7 @@ my %WriteMakefileArgs = (
   "TEST_REQUIRES" => {
     "Test::Pod" => 0
   },
-  "VERSION" => "0.006",
+  "VERSION" => "0.007",
   "test" => {
     "TESTS" => "t/*.t"
   }
@@ -37,7 +38,8 @@ my %WriteMakefileArgs = (
 
 
 my %FallbackPrereqs = (
-  "Device::WebIO" => "0.006",
+  "AnyEvent" => "7.07",
+  "Device::WebIO" => "0.008",
   "GStreamer1" => "0.002",
   "HiPi" => 0,
   "Moo" => 0,
