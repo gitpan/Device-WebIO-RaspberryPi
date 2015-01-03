@@ -22,13 +22,14 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 # POSSIBILITY OF SUCH DAMAGE.
 package Device::WebIO::RaspberryPi;
-$Device::WebIO::RaspberryPi::VERSION = '0.007';
+$Device::WebIO::RaspberryPi::VERSION = '0.008';
 # ABSTRACT: Device::WebIO implementation for the Rapsberry Pi
 use v5.12;
 use Moo;
 use namespace::clean;
 use HiPi::Wiring qw( :wiring );
 use HiPi::Device::I2C;
+use HiPi::Device::SPI qw( :spi );
 use GStreamer1;
 use Glib qw( TRUE FALSE );
 use AnyEvent;
@@ -742,10 +743,64 @@ sub _init_gstreamer
 }
 
 
+with 'Device::WebIO::Device::SPI';
+
+my @CHANNEL_NAMES = sort HiPi::Device::SPI->get_device_list;
+has '_spi_channel_devs' => (
+    is      => 'ro',
+    default => sub {{}},
+);
+
+
+sub spi_channels { scalar @CHANNEL_NAMES }
+
+sub spi_set_speed
+{
+    my ($self, $channel, $speed) = @_;
+    my $dev = $self->_spi_get_dev( $channel, $speed );
+    $dev->set_bus_maxspeed( $speed );
+    return 1;
+}
+
+sub spi_read
+{
+    my ($self, $channel, $len) = @_;
+    my $dev  = $self->_spi_get_dev( $channel );
+    my $buf  = pack 'C*', ((0x00) x $len);
+    my $recv = $dev->transfer( $buf );
+    return [ unpack 'C*', $recv ];
+}
+
+sub spi_write
+{
+    my ($self, $channel, $data) = @_;
+    my $dev  = $self->_spi_get_dev( $channel );
+    $dev->transfer( $data );
+    return 1;
+}
+
+sub _spi_get_dev
+{
+    my $self    = shift;
+    my $channel = shift;
+    my $channel_name = $CHANNEL_NAMES[$channel];
+    return $self->_spi_channel_devs->{$channel_name}
+        if exists $self->_spi_channel_devs->{$channel_name};
+
+    my $speed = @_
+        ? shift
+        : SPI_SPEED_KHZ_500;
+
+    my $dev = HiPi::Device::SPI->new(
+        devicename => $channel_name,
+        speed      => $speed,
+    );
+    $self->_spi_channel_devs->{$channel_name} = $dev;
+    return $dev;
+}
+
 
 # TODO
-#with 'Device::WebIO::Device::SPI';
-#with 'Device::WebIO::Device::I2C';
 #with 'Device::WebIO::Device::Serial';
 
 1;
@@ -799,6 +854,8 @@ https://github.com/thaytan/gst-rpicamsrc
 =item * I2CProvider
 
 =item * VideoOutputCallback
+
+=item * SPI
 
 =back
 
